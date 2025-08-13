@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Face Ratio Analyzer (Complete)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px solid #3498db;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .result-card {
+            transition: all 0.3s ease-in-out;
+            border-left-width: 4px;
+        }
+        .progress-bar-bg {
+            background-color: #e9ecef;
+        }
+        .progress-bar {
+            transition: width 0.6s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <img id="uploadedImage" class="hidden" src="" alt="Uploaded Portrait">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Golden Face Ratio Analyzer</h1>
+            <p class="text-md text-gray-600 mt-2">Menganalisis proporsi wajah dengan visualisasi garis pengukuran.</p>
+        </header>
+
+        <main class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <div class="mb-6 text-center">
+                <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                <label for="imageUpload" class="cursor-pointer bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300">
+                    Pilih Gambar
+                </label>
+            </div>
+
+            <div id="status" class="text-center my-4 hidden">
+                <div class="loader mx-auto"></div>
+                <p class="mt-2 text-gray-500 font-medium">Menganalisis wajah...</p>
+            </div>
+
+            <div id="analysis-section" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div class="lg:col-span-3">
+                        <div id="canvas-container" class="relative w-full aspect-square bg-gray-200 rounded-lg overflow-hidden sticky top-8">
+                            <canvas id="canvas" class="w-full h-full object-cover"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div id="results" class="space-y-4">
+                            <div id="overall-score-container" class="mb-6 p-4 bg-blue-50 rounded-lg text-center border-l-4 border-blue-500">
+                                <h3 class="text-lg font-semibold text-blue-800">Skor Kecantikan Total</h3>
+                                <p id="overall-score" class="text-5xl font-bold text-blue-600 mt-2">0.00%</p>
+                                <p class="text-xs text-gray-500 mt-1">Berdasarkan rata-rata dari semua pengukuran.</p>
+                            </div>
+                            <div id="results-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <div id="welcome-message" class="text-center py-16 px-6 bg-gray-50 rounded-lg">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <h3 class="mt-2 text-xl font-medium text-gray-900">Mulai Analisis</h3>
+                <p class="mt-1 text-sm text-gray-500">Unggah foto potret yang jelas dan lurus ke depan untuk hasil terbaik.</p>
+            </div>
+        </main>
+
+        <section id="explanation-section" class="mt-12">
+            <div class="bg-gray-800 text-white rounded-xl shadow-lg p-8 md:p-12">
+                <h2 class="text-3xl font-bold text-center mb-4">Apa itu Wajah Golden Ratio?</h2>
+                <p class="text-center text-gray-300 max-w-3xl mx-auto mb-10">
+                    Golden Ratio, dilambangkan dengan huruf Yunani φ (phi), adalah angka matematis sekitar 1.618. Angka ini sering ditemukan di alam, seni, dan arsitektur. Ketika diterapkan pada estetika wajah, rasio ini mengukur keseimbangan antara fitur-fitur seperti mata, hidung, bibir, serta panjang dan lebar wajah secara keseluruhan. Model AI kami menggunakan prinsip ini untuk menghitung berbagai rasio di wajah Anda dan membandingkannya dengan ideal klasik ini.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-gray-700 p-6 rounded-lg"> <h3 class="font-semibold text-lg mb-2">Panjang / Lebar Wajah</h3> <p class="text-sm text-gray-400">Wajah yang proporsional seringkali memiliki panjang sekitar 1.6 kali lebarnya. Rasio ini mencerminkan keseimbangan dan harmoni wajah secara keseluruhan.</p> </div>
+                    <div class="bg-gray-700 p-6 rounded-lg"> <h3 class="font-semibold text-lg mb-2">Jarak Antar Mata</h3> <p class="text-sm text-gray-400">Idealnya, jarak antara kedua mata sama dengan lebar satu mata. Ini memberikan tampilan yang harmonis dan terpusat.</p> </div>
+                    <div class="bg-gray-700 p-6 rounded-lg"> <h3 class="font-semibold text-lg mb-2">Harmoni Vertikal Wajah</h3> <p class="text-sm text-gray-400">Jarak dari garis rambut ke alis, dari alis ke ujung hidung, dan dari ujung hidung ke dagu idealnya memiliki perbandingan 1:1:1.</p> </div>
+                    <div class="bg-gray-700 p-6 rounded-lg"> <h3 class="font-semibold text-lg mb-2">Proporsi Hidung & Bibir</h3> <p class="text-sm text-gray-400">Lebar hidung dan panjang bibir memiliki hubungan harmonis. Keseimbangan antara kedua fitur ini sangat penting untuk estetika bagian tengah wajah.</p> </div>
+                    <div class="bg-gray-700 p-6 rounded-lg"> <h3 class="font-semibold text-lg mb-2">Keseimbangan Bibir</h3> <p class="text-sm text-gray-400">Menurut Golden Ratio, bibir bawah idealnya sedikit lebih tebal daripada bibir atas, menciptakan tampilan yang penuh dan seimbang.</p> </div>
+                    <div class="bg-gray-700 p-6 rounded-lg"> <h3 class="font-semibold text-lg mb-2">Proporsi Mulut & Rahang</h3> <p class="text-sm text-gray-400">Lebar mulut idealnya memiliki rasio emas terhadap lebar rahang atau wajah, memastikan bahwa senyum Anda proporsional dengan struktur wajah.</p> </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works-section" class="mt-12">
+            <div class="bg-white rounded-xl shadow-lg p-8 md:p-12">
+                <h2 class="text-3xl font-bold text-center mb-10">Cara Kerja & Panduan Foto</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-center">
+                    <div>
+                        <div class="bg-blue-100 text-blue-600 rounded-full h-16 w-16 mx-auto flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                        </div>
+                        <h3 class="font-semibold text-lg">Langkah 1: Unggah Foto</h3>
+                        <p class="text-sm text-gray-600">Gunakan foto yang jelas, menghadap lurus ke depan, tanpa filter atau bayangan untuk hasil terbaik.</p>
+                    </div>
+                    <div>
+                        <div class="bg-blue-100 text-blue-600 rounded-full h-16 w-16 mx-auto flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        </div>
+                        <h3 class="font-semibold text-lg">Langkah 2: Deteksi AI</h3>
+                        <p class="text-sm text-gray-600">Model AI kami akan mendeteksi 478 titik kunci di wajah Anda untuk melakukan pengukuran yang presisi.</p>
+                    </div>
+                    <div>
+                        <div class="bg-blue-100 text-blue-600 rounded-full h-16 w-16 mx-auto flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+                        </div>
+                        <h3 class="font-semibold text-lg">Langkah 3: Skor Rasio</h3>
+                        <p class="text-sm text-gray-600">Kami menghitung dan membandingkan rasio Anda dengan Golden Ratio untuk memberikan skor di setiap area wajah.</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg">
+                        <h3 class="font-bold text-xl text-green-800 mb-4">Yang Harus Dilakukan (Do's)</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-green-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg><span>Gunakan foto dengan pencahayaan yang baik dan merata.</span></li>
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-green-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg><span>Pastikan seluruh wajah terlihat dan berada di tengah.</span></li>
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-green-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg><span>Jaga ekspresi tetap netral dan bibir tertutup.</span></li>
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-green-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg><span>Lihat lurus ke arah kamera.</span></li>
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-green-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg><span>Gunakan latar belakang polos dengan sedikit gangguan.</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg">
+                        <h3 class="font-bold text-xl text-red-800 mb-4">Yang Harus Dihindari (Don'ts)</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-red-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg><span>Jangan memiringkan atau memutar kepala Anda.</span></li>
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-red-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg><span>Jangan memakai kacamata hitam, topi, atau aksesori.</span></li>
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-red-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg><span>Jangan gunakan foto dari samping atau sudut.</span></li>
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-red-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg><span>Jangan unggah gambar yang buram atau berpiksel.</span></li>
+                            <li class="flex items-start"><svg class="h-5 w-5 mr-2 text-red-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg><span>Jangan tersenyum atau cemberut secara berlebihan.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-8 text-sm text-gray-500">
+            <p>Dibuat untuk Final Project AI Bootcamp oleh Putu Eka Permata.</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        // --- DOM Elements ---
+        const imageUpload = document.getElementById('imageUpload');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const statusDiv = document.getElementById('status');
+        const resultsList = document.getElementById('results-list');
+        const overallScoreEl = document.getElementById('overall-score');
+        const analysisSection = document.getElementById('analysis-section');
+        const welcomeMessage = document.getElementById('welcome-message');
+
+        const GOLDEN_RATIO = 1.618;
+
+        // --- Face Mesh Setup ---
+        const faceMesh = new FaceMesh({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+        });
+        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        faceMesh.onResults(onResults);
+
+        // --- Event Listener ---
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImage.src = e.target.result;
+                    uploadedImage.onload = () => {
+                        statusDiv.classList.remove('hidden');
+                        analysisSection.classList.add('hidden');
+                        welcomeMessage.classList.add('hidden');
+                        canvas.width = uploadedImage.naturalWidth;
+                        canvas.height = uploadedImage.naturalHeight;
+                        faceMesh.send({ image: uploadedImage });
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- Core Functions ---
+        function onResults(results) {
+            statusDiv.classList.add('hidden');
+            analysisSection.classList.remove('hidden');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(uploadedImage, 0, 0, canvas.width, canvas.height);
+            
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                const landmarks = results.multiFaceLandmarks[0];
+                
+                const p = {
+                    chin: 152, noseTip: 1, lipsCenter: 13, hairline: 10,
+                    leftCheek: 234, rightCheek: 454,
+                    leftEyeInner: 133, rightEyeInner: 362, leftEyeOuter: 33, rightEyeOuter: 263,
+                    noseLeft: 243, noseRight: 463, noseBridge: 6,
+                    mouthLeft: 61, mouthRight: 291, upperLip: 0, lowerLip: 17,
+                    leftEyebrowUpper: 105, rightEyebrowUpper: 334,
+                };
+
+                const calculations = [
+                    { name: "Garis Rambut ke Alis / Alis ke Hidung", ideal: 1, desc: "Tiga bagian vertikal wajah idealnya sama tinggi.", p1: p.hairline, p2: 'eyebrowMidpoint', p3: 'eyebrowMidpoint', p4: p.noseTip },
+                    { name: "Alis ke Hidung / Hidung ke Dagu", ideal: 1, desc: "Kelanjutan dari harmoni vertikal wajah.", p1: 'eyebrowMidpoint', p2: p.noseTip, p3: p.noseTip, p4: p.chin },
+                    { name: "Panjang Wajah / Lebar Wajah", ideal: GOLDEN_RATIO, desc: "Rasio emas klasik untuk proporsi wajah.", p1: p.hairline, p2: p.chin, p3: p.leftCheek, p4: p.rightCheek },
+                    { name: "Panjang Bibir ke Dagu / Lebar Bibir", ideal: GOLDEN_RATIO, desc: "Keseimbangan bagian bawah wajah & bibir.", p1: p.lipsCenter, p2: p.chin, p3: p.mouthLeft, p4: p.mouthRight },
+                    { name: "Lebar Wajah / Lebar Mulut", ideal: GOLDEN_RATIO, desc: "Proporsi lebar mulut terhadap wajah.", p1: p.leftCheek, p2: p.rightCheek, p3: p.mouthLeft, p4: p.mouthRight },
+                    { name: "Lebar Hidung / Lebar Mulut", ideal: 1/GOLDEN_RATIO, desc: "Keseimbangan antara hidung dan mulut.", p1: p.noseLeft, p2: p.noseRight, p3: p.mouthLeft, p4: p.mouthRight },
+                    { name: "Jarak Antar Mata / Lebar Mata", ideal: 1, desc: "Jarak antar mata idealnya sama dengan lebar satu mata.", p1: p.leftEyeInner, p2: p.rightEyeInner, p3: p.leftEyeInner, p4: p.leftEyeOuter, extraLine: { p1: p.rightEyeInner, p2: p.rightEyeOuter } },
+                    { name: "Panjang Hidung / Lebar Hidung", ideal: GOLDEN_RATIO, desc: "Proporsi ideal untuk bentuk hidung.", p1: p.noseBridge, p2: p.noseTip, p3: p.noseLeft, p4: p.noseRight },
+                    { name: "Tebal Bibir Atas / Tebal Bibir Bawah", ideal: 1/GOLDEN_RATIO, desc: "Bibir bawah idealnya sedikit lebih tebal.", p1: p.upperLip, p2: p.lipsCenter, p3: p.lipsCenter, p4: p.lowerLip },
+                ];
+
+                let totalScore = 0;
+                let successfulCalculations = 0;
+                resultsList.innerHTML = '';
+                let allLinesToDraw = [];
+
+                calculations.forEach(calc => {
+                    try {
+                        const eyebrowMidpoint = { x: (landmarks[p.leftEyebrowUpper].x + landmarks[p.rightEyebrowUpper].x) / 2, y: (landmarks[p.leftEyebrowUpper].y + landmarks[p.rightEyebrowUpper].y) / 2 };
+                        
+                        const pointResolver = (key) => {
+                            if (key === 'eyebrowMidpoint') return eyebrowMidpoint;
+                            if (landmarks[key]) return landmarks[key];
+                            throw new Error(`Landmark point ${key} is undefined.`);
+                        };
+
+                        const p1 = pointResolver(calc.p1);
+                        const p2 = pointResolver(calc.p2);
+                        const p3 = pointResolver(calc.p3);
+                        const p4 = pointResolver(calc.p4);
+
+                        const val1 = getDistance(p1, p2);
+                        const val2 = getDistance(p3, p4);
+
+                        if (isNaN(val1) || isNaN(val2) || val2 === 0) throw new Error("Calculation resulted in NaN or division by zero.");
+
+                        const ratio = val1 / val2;
+                        const score = (1 - Math.abs(ratio - calc.ideal) / calc.ideal) * 100;
+                        
+                        allLinesToDraw.push({ start: p1, end: p2 });
+                        allLinesToDraw.push({ start: p3, end: p4 });
+                        
+                        if (calc.extraLine) {
+                            const extraP1 = pointResolver(calc.extraLine.p1);
+                            const extraP2 = pointResolver(calc.extraLine.p2);
+                            allLinesToDraw.push({ start: extraP1, end: extraP2 });
+                        }
+                        
+                        totalScore += score;
+                        successfulCalculations++;
+                        displayResult(calc.name, ratio, calc.ideal, score, calc.desc);
+
+                    } catch (error) {
+                        console.warn(`Skipping calculation for "${calc.name}": ${error.message}`);
+                    }
+                });
+                
+                drawAllLines(allLinesToDraw);
+
+                if (successfulCalculations > 0) {
+                    const overallScore = totalScore / successfulCalculations;
+                    overallScoreEl.textContent = `${overallScore.toFixed(2)}%`;
+                } else {
+                    overallScoreEl.textContent = 'N/A';
+                    resultsList.innerHTML = '<p class="text-red-500 font-semibold text-center">Tidak dapat melakukan pengukuran. Pastikan seluruh wajah, terutama dahi dan dagu, terlihat jelas di dalam foto.</p>';
+                }
+
+            } else {
+                welcomeMessage.classList.remove('hidden');
+                welcomeMessage.innerHTML = '<p class="text-red-500 font-semibold text-xl">Wajah tidak terdeteksi. Coba gunakan foto lain yang lebih jelas dan menghadap ke depan.</p>';
+                analysisSection.classList.add('hidden');
+            }
+        }
+
+        function getDistance(p1, p2) {
+            return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+        }
+        
+        function drawAllLines(lines) {
+            if (!lines) return;
+        
+            ctx.lineWidth = Math.max(2.5, canvas.width / 250);
+            ctx.strokeStyle = 'rgba(255, 223, 0, 0.9)'; // Gold color
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 5;
+
+            lines.forEach(line => {
+                ctx.beginPath();
+                ctx.moveTo(line.start.x * canvas.width, line.start.y * canvas.height);
+                ctx.lineTo(line.end.x * canvas.width, line.end.y * canvas.height);
+                ctx.stroke();
+            });
+        }
+
+        function displayResult(name, ratio, ideal, score, desc) {
+            const scoreColor = score > 90 ? 'border-green-500' : score > 75 ? 'border-yellow-500' : 'border-red-500';
+            const scoreTextColor = score > 90 ? 'text-green-600' : score > 75 ? 'text-yellow-600' : 'text-red-600';
+            const progressColor = score > 90 ? 'bg-green-500' : score > 75 ? 'bg-yellow-500' : 'bg-red-500';
+
+            const card = document.createElement('div');
+            card.className = `result-card p-4 border rounded-lg ${scoreColor} bg-white shadow-sm`;
+            card.innerHTML = `
+                <p class="font-semibold text-gray-800">${name}</p>
+                <p class="text-xs text-gray-500 mt-1 mb-2">${desc}</p>
+                <div class="flex justify-between items-center text-xs text-gray-600 mb-1">
+                    <span>Ideal: ${ideal.toFixed(3)}</span>
+                    <span>Rasio Anda: ${ratio.toFixed(3)}</span>
+                </div>
+                <div class="progress-bar-bg w-full rounded-full h-2.5">
+                    <div class="progress-bar ${progressColor} h-2.5 rounded-full" style="width: ${score > 0 ? score : 0}%"></div>
+                </div>
+                <p class="text-right font-bold text-sm mt-1 ${scoreTextColor}">${score.toFixed(2)}%</p>
+            `;
+            
+            resultsList.appendChild(card);
+        }
+    </script>
+</body>
+</html>
