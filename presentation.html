@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentasi: Golden Face Ratio Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Header & Navigasi -->
+    <header class="bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-lg font-bold">Putu Eka Permata</div>
+            <div class="hidden md:flex space-x-6 text-sm">
+                <a href="#tujuan" class="hover:text-blue-400 transition-colors">Tujuan</a>
+                <a href="#deskripsi" class="hover:text-blue-400 transition-colors">Deskripsi</a>
+                <a href="#metodologi" class="hover:text-blue-400 transition-colors">Metodologi</a>
+                <a href="#tantangan" class="hover:text-blue-400 transition-colors">Tantangan</a>
+                <a href="#demo" class="bg-blue-600 px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Demo Aplikasi</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Slide 1: Halaman Judul -->
+        <section id="judul" class="h-screen flex items-center justify-center text-center bg-grid-gray-700/[0.2]">
+            <div class="container mx-auto px-6">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-4 leading-tight">Golden Face Ratio Analyzer</h1>
+                <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">Sebuah Aplikasi Web Interaktif untuk Analisis Estetika Wajah Menggunakan AI.</p>
+                <p class="mt-8 text-sm">Final Project AI Bootcamp</p>
+            </div>
+        </section>
+
+        <!-- Slide 2: Tujuan Proyek -->
+        <section id="tujuan" class="py-20 md:py-32 section">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Tujuan Proyek</h2>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-blue-400">Tujuan Utama</h3>
+                        <p class="text-gray-300">Membangun sebuah aplikasi web yang **interaktif, mudah diakses, dan informatif** untuk menganalisis proporsi wajah manusia secara otomatis.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-blue-400">Tujuan Teknis</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-300">
+                            <li>Mengimplementasikan model AI **Google MediaPipe Face Mesh** untuk deteksi *facial landmarks* secara presisi.</li>
+                            <li>Menghitung lebih dari 9 rasio geometris wajah berdasarkan prinsip estetika **Golden Ratio**.</li>
+                            <li>Memberikan **skor dan visualisasi** yang jelas agar pengguna dapat memahami hasil analisis dengan mudah.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: Deskripsi Model & Aplikasi -->
+        <section id="deskripsi" class="py-20 md:py-32 bg-gray-800 section">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Deskripsi Model & Aplikasi</h2>
+                <div class="text-center max-w-4xl mx-auto">
+                    <h3 class="text-2xl font-semibold mb-4">Bagaimana Cara Kerjanya?</h3>
+                    <div class="grid md:grid-cols-4 gap-8 text-left">
+                        <div class="bg-gray-700 p-6 rounded-lg"><strong>1. Unggah Foto:</strong> Pengguna memilih foto potret dari perangkat mereka.</div>
+                        <div class="bg-gray-700 p-6 rounded-lg"><strong>2. Deteksi AI:</strong> Model MediaPipe mendeteksi 478 titik kunci di wajah.</div>
+                        <div class="bg-gray-700 p-6 rounded-lg"><strong>3. Kalkulasi Rasio:</strong> Aplikasi menghitung jarak antar titik untuk mendapatkan berbagai rasio.</div>
+                        <div class="bg-gray-700 p-6 rounded-lg"><strong>4. Skor & Visualisasi:</strong> Hasil dibandingkan dengan nilai ideal dan garis pengukuran digambar di foto.</div>
+                    </div>
+                    <p class="mt-8 text-gray-400">[Di sini bisa ditambahkan screenshot aplikasi yang sedang berjalan untuk visualisasi]</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4 & 5: Metrik & Dataset -->
+        <section id="metrik" class="py-20 md:py-32 section">
+            <div class="container mx-auto px-6">
+                <div class="grid md:grid-cols-2 gap-12 items-start">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6">Metrik Keberhasilan</h2>
+                        <p class="mb-4"><strong class="text-blue-400">Metrik Utama:</strong> Skor Kesesuaian (%).</p>
+                        <p class="mb-4">Mengukur seberapa dekat proporsi wajah pengguna dengan rasio ideal matematis.</p>
+                        <div class="bg-gray-800 p-4 rounded-lg text-sm font-mono">
+                            Skor = (1 - |Rasio Terukur - Rasio Ideal| / Rasio Ideal) * 100%
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6">Dataset yang Digunakan</h2>
+                        <p class="mb-4">Aplikasi ini menggunakan model **pre-trained Google MediaPipe Face Mesh**, sehingga tidak ada proses training ulang.</p>
+                        <p><strong class="text-blue-400">Testing Dataset:</strong> Untuk pengujian, digunakan kumpulan foto potret dari internet (Unsplash, Pexels) yang mencakup berbagai etnis, kondisi pencahayaan, dan resolusi untuk memastikan aplikasi berfungsi secara robust.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6 & 7: Metodologi & Tantangan -->
+        <section id="metodologi" class="py-20 md:py-32 bg-gray-800 section">
+            <div class="container mx-auto px-6">
+                <div class="grid md:grid-cols-2 gap-12 items-start">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6">Metodologi Pengembangan</h2>
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li><strong>Prototipe Awal:</strong> Membangun aplikasi dasar dengan 1-2 pengukuran.</li>
+                            <li><strong>Riset & Ekspansi:</strong> Menambahkan 8+ rasio baru untuk analisis mendalam.</li>
+                            <li><strong>Pengembangan Fitur Visualisasi:</strong> Mengimplementasikan garis pengukuran di foto.</li>
+                            <li><strong>Perbaikan Bug & Robustness:</strong> Membuat kode lebih tangguh terhadap input yang tidak sempurna.</li>
+                            <li><strong>Penyempurnaan UI/UX:</strong> Menambahkan bagian penjelasan dan panduan foto.</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6">Tantangan & Pembelajaran</h2>
+                        <p class="mb-2"><strong class="text-blue-400">Tantangan Teknis:</strong> Konsistensi hasil sangat sensitif terhadap kualitas foto (sudut, pencahayaan).</p>
+                        <p><strong class="text-blue-400">Pembelajaran Konseptual:</strong> Menyadari bahwa "kecantikan" itu subjektif dan Golden Ratio adalah sebuah konsep ideal matematis, bukan standar absolut.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8 & 9: Peningkatan & Demo -->
+        <section id="demo" class="py-20 md:py-32 text-center section">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Demo Aplikasi & Kode Sumber</h2>
+                <p class="text-gray-300 max-w-2xl mx-auto mb-8">Aplikasi dapat diakses dan dicoba langsung melalui link di bawah ini.</p>
+                <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                    <a href="https://tdprmt.github.io/final-project-ai/" target="_blank" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 w-full md:w-auto">
+                        Coba Demo Aplikasi
+                    </a>
+                    <a href="https://github.com/tdprmt/final-project-ai" target="_blank" class="bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-gray-600 transition-all duration-300 w-full md:w-auto">
+                        Lihat Kode di GitHub
+                    </a>
+                </div>
+                <div class="mt-12">
+                    <h3 class="text-2xl font-bold mb-4">Potensi Peningkatan di Masa Depan</h3>
+                    <p class="text-gray-400 text-sm max-w-3xl mx-auto">Analisis video real-time, analisis 3D yang lebih akurat, dan fitur perbandingan hasil.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 text-sm text-gray-500 border-t border-gray-800">
+        <p>&copy; 2025 Putu Eka Permata. Dibuat untuk Final Project AI Bootcamp.</p>
+    </footer>
+
+    <script>
+        // Script untuk animasi fade-in saat scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+
+</body>
+</html>
